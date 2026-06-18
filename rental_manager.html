@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rental Property Manager</title>
+<style>
+  :root {
+    --bg: #f0f4f8; --card: #fff; --primary: #2563eb; --primary-light: #eff6ff;
+    --success: #16a34a; --success-light: #f0fdf4;
+    --danger: #dc2626; --danger-light: #fef2f2;
+    --text: #1e293b; --muted: #64748b; --border: #e2e8f0; --radius: 12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  header{background:var(--primary);color:#fff;padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+  header h1{font-size:1.25rem;font-weight:700}
+  .year-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .year-bar label{font-weight:600;font-size:.88rem}
+  .year-bar select{border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.88rem;cursor:pointer}
+  .btn{border:none;border-radius:8px;padding:7px 16px;font-size:.85rem;cursor:pointer;font-weight:600;transition:background .15s}
+  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#1d4ed8}
+  .btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#15803d}
+  .btn-ghost{background:none;border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+  .btn-danger{background:none;border:1px solid var(--border);color:var(--danger);font-size:.8rem}.btn-danger:hover{background:var(--danger-light)}
+  .main{max-width:1100px;margin:0 auto;padding:24px 20px}
+  /* Tabs */
+  .tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
+  .tab-btn{padding:8px 18px;border-radius:8px;border:2px solid var(--border);background:#fff;font-size:.88rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .15s}
+  .tab-btn.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+  .tab-btn:hover:not(.active){border-color:#94a3b8;color:var(--text)}
+  .ml-auto{margin-left:auto}
+  /* Card */
+  .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:22px;margin-bottom:18px}
+  /* Dashboard */
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+  .stat-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:16px 18px}
+  .stat-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+  .stat-value{font-size:1.5rem;font-weight:800}
+  .green{color:var(--success)}.red{color:var(--danger)}.blue{color:var(--primary)}
+  /* Clickable property row */
+  .prop-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:10px;border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:all .15s;background:#fff}
+  .prop-row:hover{border-color:var(--primary);background:var(--primary-light);box-shadow:0 2px 8px rgba(37,99,235,.1)}
+  .pr-left .pr-name{font-weight:700;font-size:.95rem}
+  .pr-left .pr-addr{font-size:.78rem;color:var(--muted)}
+  .pr-right{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .pr-stat .lbl{font-size:.7rem;color:var(--muted)}
+  .pr-stat .val{font-weight:700;font-size:.88rem}
+  .pr-enter{display:flex;align-items:center;gap:6px;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
+  .pr-enter:hover{background:#1d4ed8}
+  /* Property page */
+  .prop-meta{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+  .input-inline{border:none;border-bottom:2px solid transparent;background:transparent;outline:none;color:var(--text)}
+  .input-inline:focus{border-bottom-color:var(--primary)}
+  .prop-name-inp{font-size:1.15rem;font-weight:700;width:260px}
+  .prop-addr-inp{font-size:.85rem;color:var(--muted);width:300px}
+  .own-row{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.83rem;color:var(--muted)}
+  .own-row input{width:56px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:.83rem;text-align:right}
+  /* Filter */
+  .filter-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .filter-row label{font-size:.83rem;color:var(--muted);font-weight:600}
+  .filter-row select{border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:.83rem}
+  /* Add entry panel */
+  .add-panel{background:#f8fafc;border:2px dashed var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px}
+  .add-panel-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin-bottom:12px}
+  .add-fields{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+  .add-field{display:flex;flex-direction:column;gap:4px}
+  .add-field label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .add-field input,.add-field select{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.88rem;outline:none;background:#fff}
+  .add-field input:focus,.add-field select:focus{border-color:var(--primary)}
+  .f-type{width:130px}.f-date{width:135px}.f-cat{width:170px}.f-desc{flex:1;min-width:150px}.f-amt{width:120px}
+  /* Entry table */
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;margin-top:4px}
+  .section-head span{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .section-head .count{font-size:.75rem;color:var(--muted)}
+  .entry-table{width:100%;border-collapse:collapse;font-size:.875rem}
+  .entry-table th{text-align:left;padding:8px 10px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:2px solid var(--border)}
+  .entry-table th.r{text-align:right}
+  .entry-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .entry-table tr:last-child td{border-bottom:none}
+  .entry-table tr:hover td{background:#f8fafc}
+  .entry-table td.r{text-align:right;font-variant-numeric:tabular-nums}
+  .cell-inp{border:none;background:transparent;outline:none;width:100%;color:var(--text);font-size:.875rem}
+  .cell-inp:focus{background:#f1f5f9;border-radius:4px;padding:2px 4px}
+  .amt-inp{width:110px;text-align:right;font-variant-numeric:tabular-nums}
+  .cat-sel{border:none;background:transparent;outline:none;font-size:.875rem;color:var(--text);cursor:pointer;max-width:160px}
+  .cat-sel:focus{background:#f1f5f9;border-radius:4px}
+  .del-btn{background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:1rem;padding:2px 6px;line-height:1}
+  .del-btn:hover{color:var(--danger)}
+  /* Totals */
+  .totals-bar{display:flex;justify-content:flex-end;gap:28px;padding:10px 10px 0;border-top:2px solid var(--border);margin-top:4px;font-size:.88rem;font-weight:700}
+  .total-item{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .total-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  /* Net */
+  .net-box{border-radius:var(--radius);padding:16px 20px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .net-box.profit{background:var(--success-light);border:1px solid #bbf7d0}
+  .net-box.loss{background:var(--danger-light);border:1px solid #fecaca}
+  .net-label{font-size:.88rem;font-weight:700;margin-bottom:4px}
+  .net-sub{font-size:.78rem;color:var(--muted)}
+  .net-value{font-size:1.5rem;font-weight:800}
+  .net-box.profit .net-value{color:var(--success)}.net-box.loss .net-value{color:var(--danger)}
+  .empty-state{text-align:center;padding:24px;color:var(--muted);font-size:.85rem}
+  @media print{.tabs,.add-panel,.del-btn,.btn-danger,.year-bar button,.pr-enter{display:none!important}.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 Rental Property Manager</h1>
+  <span id="hdr-year" style="opacity:.8;font-size:.85rem"></span>
+</header>
+<div class="year-bar">
+  <label>Tax Year:</label>
+  <select id="year-sel"></select>
+  <button class="btn btn-primary" onclick="addYear()">+ Year</button>
+  <button class="btn btn-ghost" style="margin-left:4px" onclick="window.print()">🖨 Print</button>
+</div>
+<div class="main">
+  <div class="tabs" id="tabs"></div>
+  <div id="content"></div>
+</div>
+
+<script>
+const INC_CATS=['Rental Income','Bond Received','Parking Fee','Other Income'];
+const EXP_CATS=['Management Fees','Water Bill','Electricity Bill','Body Corp Fees','Council Rates','Insurance','Maintenance & Repairs','Pest Control','Gardening','Depreciation','Mortgage Interest','Advertising','Cleaning','Other Expense'];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let state = (()=>{ try{ const s=localStorage.getItem('rentalMgr3'); return s?JSON.parse(s):def(); }catch{return def();} })();
+function def(){const yr=String(new Date().getFullYear());return{years:[yr],currentYear:yr,currentTab:'dashboard',data:{[yr]:{properties:[defProp(1)],nextPropId:2}}};}
+function defProp(id){return{id,name:'Property '+id,address:'',ownershipPct:100,entries:[],nextEntryId:1};}
+function save(){localStorage.setItem('rentalMgr3',JSON.stringify(state));}
+function yd(){return state.data[state.currentYear];}
+function getProp(id){return yd().properties.find(p=>p.id===id);}
+
+// ── Year ───────────────────────────────────────────────────────────────────
+function populateYearSel(){
+  const sel=document.getElementById('year-sel');
+  sel.innerHTML=state.years.map(y=>`<option value="${y}"${y===state.currentYear?' selected':''}>${y}</option>`).join('');
+  sel.onchange=()=>{state.currentYear=sel.value;save();render();};
+  document.getElementById('hdr-year').textContent=state.currentYear;
+}
+function addYear(){
+  const next=String(Math.max(...state.years.map(Number))+1);
+  const y=prompt('Enter year:',next); if(!y||isNaN(y))return;
+  const yr=y.trim(); if(state.years.includes(yr)){alert('Already exists.');return;}
+  state.years.push(yr);state.years.sort();
+  const prev=yd();
+  state.data[yr]={nextPropId:prev.nextPropId,properties:prev.properties.map(p=>({...p,entries:[],nextEntryId:1}))};
+  state.currentYear=yr;save();render();
+}
+
+// ── Properties ─────────────────────────────────────────────────────────────
+function addProperty(){
+  const d=yd();const id=d.nextPropId++;
+  d.properties.push(defProp(id));
+  state.currentTab='prop_'+id;save();render();
+}
+function deleteProp(id){
+  if(!confirm('Delete this property?'))return;
+  yd().properties=yd().properties.filter(p=>p.id!==id);
+  state.currentTab='dashboard';save();render();
+}
+
+// ── Entries ────────────────────────────────────────────────────────────────
+function doAddEntry(pid){
+  const p=getProp(pid);
+  const type=document.getElementById('ntype-'+pid).value;
+  const date=document.getElementById('ndate-'+pid).value||(state.currentYear+'-01-01');
+  const cat=document.getElementById('ncat-'+pid).value;
+  const desc=document.getElementById('ndesc-'+pid).value.trim();
+  const amt=parseFloat(document.getElementById('namt-'+pid).value)||0;
+  if(!amt){alert('Please enter an amount.');document.getElementById('namt-'+pid).focus();return;}
+  p.entries.push({id:p.nextEntryId++,type,date,cat,desc,amt});
+  p.entries.sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('ndesc-'+pid).value='';
+  document.getElementById('namt-'+pid).value='';
+  document.getElementById('namt-'+pid).focus();
+  save();refreshBody(pid);
+}
+function deleteEntry(pid,eid){
+  const p=getProp(pid);p.entries=p.entries.filter(e=>e.id!==eid);save();refreshBody(pid);
+}
+function updateEntry(pid,eid,field,val){
+  const p=getProp(pid);const e=p.entries.find(e=>e.id===eid);if(!e)return;
+  if(field==='amt')e.amt=parseFloat(val)||0; else e[field]=val;
+  if(field==='date')p.entries.sort((a,b)=>a.date.localeCompare(b.date));
+  save();refreshTotals(pid);
+}
+function switchCats(pid){
+  const type=document.getElementById('ntype-'+pid).value;
+  const cats=type==='inc'?INC_CATS:EXP_CATS;
+  document.getElementById('ncat-'+pid).innerHTML=cats.map(c=>`<option>${esc(c)}</option>`).join('');
+}
+
+// ── Calc ───────────────────────────────────────────────────────────────────
+function calcProp(p,mf){
+  const es=mf?p.entries.filter(e=>e.date&&e.date.slice(5,7)===mf):p.entries;
+  const inc=es.filter(e=>e.type==='inc').reduce((s,e)=>s+e.amt,0);
+  const exp=es.filter(e=>e.type==='exp').reduce((s,e)=>s+e.amt,0);
+  const share=(p.ownershipPct||100)/100;
+  return{inc,exp,net:(inc-exp)*share,share};
+}
+function fmt(n,d=0){return(n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-AU',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render(){
+  populateYearSel();renderTabs();
+  if(state.currentTab==='dashboard'){document.getElementById('content').innerHTML=renderDashboard();}
+  else{
+    const id=parseInt(state.currentTab.replace('prop_',''));
+    const p=getProp(id);
+    if(p){document.getElementById('content').innerHTML=renderPropPage(p);setupPropListeners(id);}
+    else{state.currentTab='dashboard';document.getElementById('content').innerHTML=renderDashboard();}
+  }
+}
+function renderTabs(){
+  const props=yd().properties;
+  let h=`<button class="tab-btn ${state.currentTab==='dashboard'?'active':''}" onclick="switchTab('dashboard')">📊 Dashboard</button>`;
+  props.forEach(p=>h+=`<button class="tab-btn ${state.currentTab==='prop_'+p.id?'active':''}" onclick="switchTab('prop_${p.id}')">${esc(p.name)}</button>`);
+  h+=`<button class="btn btn-primary ml-auto" onclick="addProperty()">+ Add Property</button>`;
+  document.getElementById('tabs').innerHTML=h;
+}
+function switchTab(tab){state.currentTab=tab;save();render();}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const props=yd().properties;
+  if(!props.length)return`<div style="text-align:center;padding:60px;color:var(--muted)"><h2 style="margin-bottom:8px">No properties yet</h2><p>Click <strong>+ Add Property</strong> above to get started.</p></div>`;
+  let tI=0,tE=0,tN=0;
+  props.forEach(p=>{const c=calcProp(p);tI+=c.inc;tE+=c.exp;tN+=c.net;});
+  const rows=props.map(p=>{
+    const c=calcProp(p);
+    return`<div class="prop-row" onclick="switchTab('prop_${p.id}')">
+      <div class="pr-left">
+        <div class="pr-name">🏠 ${esc(p.name)}</div>
+        <div class="pr-addr">${esc(p.address||'Click to open and enter data')}</div>
+      </div>
+      <div class="pr-right">
+        <div class="pr-stat"><div class="lbl">Income</div><div class="val blue">${fmt(c.inc)}</div></div>
+        <div class="pr-stat"><div class="lbl">Expenses</div><div class="val">${fmt(c.exp)}</div></div>
+        <div class="pr-stat"><div class="lbl">Net (${p.ownershipPct}%)</div><div class="val ${c.net>=0?'green':'red'}">${fmt(c.net,2)}</div></div>
+        <div class="pr-stat"><div class="lbl">Entries</div><div class="val">${p.entries.length}</div></div>
+        <button class="pr-enter" onclick="event.stopPropagation();switchTab('prop_${p.id}')">✏️ Enter Data</button>
+      </div>
+    </div>`;
+  }).join('');
+  return`
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-label">Total Income</div><div class="stat-value blue">${fmt(tI)}</div></div>
+      <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value">${fmt(tE)}</div></div>
+      <div class="stat-card"><div class="stat-label">Net Income / Loss</div><div class="stat-value ${tN>=0?'green':'red'}">${fmt(tN,2)}</div></div>
+      <div class="stat-card"><div class="stat-label">Properties</div><div class="stat-value blue">${props.length}</div></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:14px">Portfolio — ${state.currentYear}</div>
+      ${rows}
+      <p style="font-size:.78rem;color:var(--muted);margin-top:12px;text-align:center">👆 Click any property row or the <strong>Enter Data</strong> button to add income & expenses</p>
+    </div>`;
+}
+
+// ── Property Page ──────────────────────────────────────────────────────────
+function renderPropPage(p){
+  const incOpts=INC_CATS.map(c=>`<option>${esc(c)}</option>`).join('');
+  const expOpts=EXP_CATS.map(c=>`<option>${esc(c)}</option>`).join('');
+  return`
+  <div class="card">
+    <div class="prop-meta">
+      <div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <input class="input-inline prop-name-inp" id="pname-${p.id}" value="${esc(p.name)}" placeholder="Property Name">
+          <input class="input-inline prop-addr-inp" id="paddr-${p.id}" value="${esc(p.address)}" placeholder="Address (optional)">
+        </div>
+        <div class="own-row">
+          <label>My ownership share:</label>
+          <input type="number" id="pown-${p.id}" min="1" max="100" value="${p.ownershipPct}">%
+          <span style="font-size:.75rem;margin-left:4px;color:var(--muted)">(net adjusted to your share)</span>
+        </div>
+      </div>
+      <button class="btn btn-danger" onclick="deleteProp(${p.id})">🗑 Delete Property</button>
+    </div>
+
+    <!-- ── ADD ENTRY PANEL ── -->
+    <div class="add-panel">
+      <div class="add-panel-title">➕ Add New Income / Expense Entry</div>
+      <div class="add-fields">
+        <div class="add-field">
+          <label>Type</label>
+          <select class="f-type" id="ntype-${p.id}" onchange="switchCats(${p.id})">
+            <option value="inc">💰 Income</option>
+            <option value="exp">💸 Expense</option>
+          </select>
+        </div>
+        <div class="add-field">
+          <label>Date</label>
+          <input type="date" class="f-date" id="ndate-${p.id}" value="${state.currentYear}-01-01">
+        </div>
+        <div class="add-field">
+          <label>Category</label>
+          <select class="f-cat" id="ncat-${p.id}">${incOpts}</select>
+        </div>
+        <div class="add-field" style="flex:1;min-width:140px">
+          <label>Description (optional)</label>
+          <input type="text" class="f-desc" id="ndesc-${p.id}" placeholder="e.g. January rent">
+        </div>
+        <div class="add-field">
+          <label>Amount ($)</label>
+          <input type="number" class="f-amt" id="namt-${p.id}" placeholder="0.00" min="0" step="0.01"
+            onkeydown="if(event.key==='Enter')doAddEntry(${p.id})">
+        </div>
+        <div class="add-field">
+          <label>&nbsp;</label>
+          <button class="btn btn-success" style="padding:8px 20px;font-size:.9rem" onclick="doAddEntry(${p.id})">+ Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FILTER ── -->
+    <div class="filter-row">
+      <label>Filter by month:</label>
+      <select id="mfilter-${p.id}" onchange="refreshBody(${p.id})">
+        <option value="">All months (${state.currentYear})</option>
+        ${MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,'0')}">${m} ${state.currentYear}</option>`).join('')}
+      </select>
+    </div>
+
+    <!-- ── ENTRY TABLES (filled by JS) ── -->
+    <div id="pbody-${p.id}"></div>
+    <div id="pnet-${p.id}"></div>
+  </div>`;
+}
+
+function setupPropListeners(pid){
+  refreshBody(pid);
+  document.getElementById('pname-'+pid).addEventListener('input',function(){getProp(pid).name=this.value;save();renderTabs();});
+  document.getElementById('paddr-'+pid).addEventListener('input',function(){getProp(pid).address=this.value;save();});
+  document.getElementById('pown-'+pid).addEventListener('input',function(){getProp(pid).ownershipPct=Math.min(100,Math.max(1,Number(this.value)||100));save();refreshTotals(pid);});
+}
+
+function refreshBody(pid){
+  const p=getProp(pid);
+  const mSel=document.getElementById('mfilter-'+pid);
+  const mf=mSel?mSel.value:'';
+  const all=mf?p.entries.filter(e=>e.date&&e.date.slice(5,7)===mf):p.entries;
+  const incE=all.filter(e=>e.type==='inc');
+  const expE=all.filter(e=>e.type==='exp');
+
+  function makeOpts(type,selected){
+    const list=type==='inc'?INC_CATS:EXP_CATS;
+    return list.map(c=>`<option${c===selected?' selected':''}>${esc(c)}</option>`).join('');
+  }
+  function rows(arr){
+    if(!arr.length)return`<tr><td colspan="5" class="empty-state">No entries yet — use the form above to add one</td></tr>`;
+    return arr.map(e=>`<tr>
+      <td><input class="cell-inp" type="date" style="width:130px" value="${esc(e.date)}" onchange="updateEntry(${pid},${e.id},'date',this.value)"></td>
+      <td><select class="cat-sel" onchange="updateEntry(${pid},${e.id},'cat',this.value)">${makeOpts(e.type,e.cat)}</select></td>
+      <td><input class="cell-inp" value="${esc(e.desc)}" placeholder="—" onchange="updateEntry(${pid},${e.id},'desc',this.value)"></td>
+      <td class="r"><input class="cell-inp amt-inp" type="number" min="0" step="0.01" value="${e.amt}" onchange="updateEntry(${pid},${e.id},'amt',this.value)"></td>
+      <td style="width:36px"><button class="del-btn" onclick="deleteEntry(${pid},${e.id})" title="Delete">✕</button></td>
+    </tr>`).join('');
+  }
+
+  const incT=incE.reduce((s,e)=>s+e.amt,0);
+  const expT=expE.reduce((s,e)=>s+e.amt,0);
+
+  document.getElementById('pbody-'+pid).innerHTML=`
+    <div style="margin-bottom:20px">
+      <div class="section-head"><span style="color:var(--success)">💰 Income Entries</span><span class="count">${incE.length} entries</span></div>
+      <table class="entry-table">
+        <thead><tr><th>Date</th><th>Category</th><th>Description</th><th class="r">Amount</th><th></th></tr></thead>
+        <tbody>${rows(incE)}</tbody>
+      </table>
+      <div class="totals-bar"><div class="total-item"><div class="total-label">Total Income</div><div style="color:var(--success)">${fmt(incT,2)}</div></div></div>
+    </div>
+    <div>
+      <div class="section-head"><span style="color:var(--danger)">💸 Expense Entries</span><span class="count">${expE.length} entries</span></div>
+      <table class="entry-table">
+        <thead><tr><th>Date</th><th>Category</th><th>Description</th><th class="r">Amount</th><th></th></tr></thead>
+        <tbody>${rows(expE)}</tbody>
+      </table>
+      <div class="totals-bar"><div class="total-item"><div class="total-label">Total Expenses</div><div style="color:var(--danger)">${fmt(expT,2)}</div></div></div>
+    </div>`;
+
+  refreshTotals(pid);
+}
+
+function refreshTotals(pid){
+  const p=getProp(pid);
+  const mSel=document.getElementById('mfilter-'+pid);
+  const mf=mSel?mSel.value:'';
+  const c=calcProp(p,mf||null);
+  const nc=c.net>=0?'profit':'loss';
+  const nl=c.net>=0?'✅ Net Profit':'⚠️ Net Loss';
+  const period=mf?MONTHS[parseInt(mf)-1]+' '+state.currentYear:state.currentYear;
+  const netEl=document.getElementById('pnet-'+pid);
+  if(netEl)netEl.innerHTML=`
+    <div class="net-box ${nc}">
+      <div><div class="net-label">${nl} — ${period}</div>
+      <div class="net-sub">Income ${fmt(c.inc,2)} &nbsp;–&nbsp; Expenses ${fmt(c.exp,2)}${p.ownershipPct<100?' &nbsp;×&nbsp; '+p.ownershipPct+'% ownership':''}</div></div>
+      <div class="net-value">${fmt(c.net,2)}</div>
+    </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
